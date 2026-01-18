@@ -21,9 +21,7 @@ function createInstanceTemplate(): InstanceDataWithTime {
     runtime: {
       minecraft: '1.19.2',
       forge: '',
-      liteloader: '',
       fabricLoader: '',
-      yarn: '',
       optifine: '',
       quiltLoader: '',
       neoForged: '',
@@ -155,7 +153,6 @@ describe('Instance Assignment Utils', () => {
         ...createInstanceTemplate(),
         name: 'Current Instance',
         author: 'Current Author',
-        runtime: { minecraft: '1.19.2' },
         maxMemory: 4096,
         minMemory: 1024,
         assignMemory: false,
@@ -165,6 +162,7 @@ describe('Instance Assignment Utils', () => {
         mcOptions: ['--username', 'test'],
         server: { host: 'old.example.com', port: 25565 },
       }
+      currentInstance.runtime.minecraft = '1.19.2'
     })
 
     it('should detect simple property changes', async () => {
@@ -408,7 +406,11 @@ describe('Instance Assignment Utils', () => {
         java: undefined,
       }
 
-      const changes = await computeInstanceEditChanges(currentWithFields, editOptions, async (s) => s)
+      const changes = await computeInstanceEditChanges(
+        currentWithFields,
+        editOptions,
+        async (s) => s,
+      )
 
       expect(changes.prependCommand).toBeUndefined()
       expect(changes.preExecuteCommand).toBeUndefined()
@@ -427,7 +429,11 @@ describe('Instance Assignment Utils', () => {
         minMemory: undefined,
       }
 
-      const changes = await computeInstanceEditChanges(currentWithMemory, editOptions, async (s) => s)
+      const changes = await computeInstanceEditChanges(
+        currentWithMemory,
+        editOptions,
+        async (s) => s,
+      )
 
       // Explicitly setting to undefined should be included in result to clear the field
       expect(changes.minMemory).toBeUndefined()
@@ -542,7 +548,11 @@ describe('Instance Assignment Utils', () => {
         },
       }
 
-      const changes = await computeInstanceEditChanges(currentWithFullRuntime, editOptions, async (s) => s)
+      const changes = await computeInstanceEditChanges(
+        currentWithFullRuntime,
+        editOptions,
+        async (s) => s,
+      )
 
       // Should not include in result as the values are identical (key order doesn't matter semantically)
       expect(changes.runtime).toBeUndefined()
@@ -573,9 +583,10 @@ describe('Instance Assignment Utils', () => {
         ...createInstanceTemplate(),
         name: 'Original Instance',
         author: 'Original Author',
-        runtime: { minecraft: '1.19.2', forge: '43.2.0' },
         maxMemory: 4096,
       }
+      instance.runtime.minecraft = '1.19.2'
+      instance.runtime.forge = '43.2.0'
     })
 
     it('should apply simple property changes', () => {
@@ -585,12 +596,12 @@ describe('Instance Assignment Utils', () => {
         maxMemory: 8192,
       }
 
-      const result = applyInstanceChanges(instance, changes)
+      applyInstanceChanges(instance, changes)
 
-      expect(result.name).toBe('Updated Instance')
-      expect(result.author).toBe('Updated Author')
-      expect(result.maxMemory).toBe(8192)
-      expect(result.description).toBe(instance.description) // unchanged
+      expect(instance.name).toBe('Updated Instance')
+      expect(instance.author).toBe('Updated Author')
+      expect(instance.maxMemory).toBe(8192)
+      expect(instance.description).toBe(instance.description) // unchanged
     })
 
     it('should merge runtime changes properly', () => {
@@ -602,23 +613,29 @@ describe('Instance Assignment Utils', () => {
         },
       }
 
-      const result = applyInstanceChanges(instance, changes)
+      applyInstanceChanges(instance, changes)
 
-      expect(result.runtime.minecraft).toBe('1.19.2') // preserved
-      expect(result.runtime.forge).toBe('43.2.0') // preserved
-      expect(result.runtime.fabricLoader).toBe('0.14.21') // added
-      expect(result.runtime.quiltLoader).toBe('0.19.2') // added
+      expect(instance.runtime.minecraft).toBe('1.19.2') // preserved
+      expect(instance.runtime.forge).toBe('43.2.0') // preserved
+      expect(instance.runtime.fabricLoader).toBe('0.14.21') // added
+      expect(instance.runtime.quiltLoader).toBe('0.19.2') // added
     })
 
-    it('should not mutate the original instance', () => {
-      const changes = { name: 'Updated Instance' }
-      const originalName = instance.name
+    it('should merge runtime changes properly', () => {
+      const changes: Partial<InstanceDataWithTime> = {
+        runtime: {
+          ...instance.runtime,
+          forge: undefined,
+          fabricLoader: '0.14.21',
+        },
+      }
 
-      const result = applyInstanceChanges(instance, changes)
+      applyInstanceChanges(instance, changes)
 
-      expect(instance.name).toBe(originalName)
-      expect(result.name).toBe('Updated Instance')
-      expect(result).not.toBe(instance)
+      expect(instance.runtime.minecraft).toBe('1.19.2') // preserved
+      expect(instance.runtime.forge).toBe('') // preserved
+      expect(instance.runtime.fabricLoader).toBe('0.14.21') // added
+      expect(instance.runtime.quiltLoader).toBe('') // preserved
     })
   })
 

@@ -186,6 +186,8 @@ export const InstanceSchema = InstanceDataSchema.extend({
   creationDate: z.coerce.number().catch(0).default(0),
 })
 
+export const InstanceSchemaPartial = InstanceSchema.partial()
+
 export type InstanceDataWithTime = z.infer<typeof InstanceSchema>
 
 export type Instance = InstanceDataWithTime & {

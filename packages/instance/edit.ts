@@ -1,11 +1,10 @@
+import { z } from 'zod'
 import {
   InstanceDataWithTime,
   InstanceSchema,
-  PartialRuntimeVersions,
-  RuntimeVersions,
+  InstanceSchemaPartial,
   RuntimeVersionsSchema,
 } from './instance'
-import { z } from 'zod'
 
 /**
  * Safely assign properties from source to target, only updating if values differ
@@ -118,15 +117,6 @@ export async function computeInstanceEditChanges(
 export function applyInstanceChanges(
   instance: InstanceDataWithTime,
   changes: Partial<InstanceDataWithTime>,
-): InstanceDataWithTime {
-  // Merge changes and validate using Zod
-  const merged = { ...instance, ...changes }
-
-  // Special handling for runtime to merge instead of replace
-  if (changes.runtime && typeof changes.runtime === 'object') {
-    merged.runtime = { ...instance.runtime, ...changes.runtime }
-  }
-
-  // Validate the result
-  return InstanceSchema.parse(merged)
+): void {
+  assignShallow(instance, InstanceSchemaPartial.parse(changes))
 }
