@@ -11,12 +11,9 @@ export const RuntimeVersionsSchema = z
     forge: z.string().catch('').default(''),
     /** NeoForged version of this version. e.g. 14.23.5.2838 */
     neoForged: z.string().catch('').default(''),
-    liteloader: z.string().catch('').default(''),
     /** Fabric loader version, e.g. 0.7.2+build.175 */
     fabricLoader: z.string().catch('').default(''),
     quiltLoader: z.string().catch('').default(''),
-    /** Fabric yarn version, e.g. 1.15.1+build.14 @deprecated */
-    yarn: z.string().catch('').default(''),
     /** Optifine version e.g. HD_U_F1_pre6 or HD_U_E6 */
     optifine: z.string().catch('').default(''),
     /** The labyMod version */
@@ -24,6 +21,7 @@ export const RuntimeVersionsSchema = z
   })
 
 export type RuntimeVersions = z.infer<typeof RuntimeVersionsSchema>
+export type PartialRuntimeVersions = Partial<RuntimeVersions> & { minecraft: string }
 
 /**
  * Modrinth modpack upstream configuration
@@ -102,9 +100,7 @@ export const InstanceDataSchema = z.object({
   runtime: RuntimeVersionsSchema.catch({
     minecraft: '',
     forge: '',
-    liteloader: '',
     fabricLoader: '',
-    yarn: '',
     optifine: '',
     quiltLoader: '',
     neoForged: '',
@@ -112,9 +108,7 @@ export const InstanceDataSchema = z.object({
   }).default({
     minecraft: '',
     forge: '',
-    liteloader: '',
     fabricLoader: '',
-    yarn: '',
     optifine: '',
     quiltLoader: '',
     neoForged: '',

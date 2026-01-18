@@ -1,4 +1,4 @@
-import { InstanceData, RuntimeVersions } from './instance'
+import { InstanceData, PartialRuntimeVersions, RuntimeVersions } from './instance'
 import { InstanceFile } from './files'
 import { CreateInstanceOptions } from './create'
 
@@ -310,7 +310,7 @@ export function getInstanceConfigFromModrinthModpack(manifest: ModrinthModpackMa
       fabricLoader: manifest.dependencies['fabric-loader'],
       quiltLoader: manifest.dependencies['quilt-loader'],
     },
-  }
+  } satisfies CreateInstanceOptions
 }
 
 // Conversion functions from instance data to modpack manifests
@@ -416,8 +416,6 @@ export function getMcbbsModpackFromInstance(instance: InstanceData): McbbsModpac
 }
 
 export interface ModpackInstallProfile {
-  instance: CreateInstanceOptions & {
-    runtime: RuntimeVersions
-  }
+  instance: CreateInstanceOptions & { runtime: PartialRuntimeVersions }
   files: InstanceFile[]
 }

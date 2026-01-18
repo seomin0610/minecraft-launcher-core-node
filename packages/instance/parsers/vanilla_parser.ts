@@ -63,13 +63,11 @@ export async function parseVanillaInstance(
     for (const [id, profile] of Object.entries(profiles.profiles)) {
       const instancePath = profile.gameDir || minecraftPath
 
-      const runtime: RuntimeVersions = {
-        minecraft: profile.lastVersionId,
-      }
-
       const options: CreateInstanceOptions = {
         name: profile.name,
-        runtime,
+        runtime: {
+          minecraft: profile.lastVersionId,
+        },
         resourcepacks: true,
         shaderpacks: true,
       }

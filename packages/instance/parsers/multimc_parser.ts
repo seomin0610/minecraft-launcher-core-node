@@ -146,14 +146,13 @@ export async function parseMultiMCInstance(path: string): Promise<CreateInstance
       instancePack.components.find((c) => c.uid === 'net.fabricmc.fabric-loader')?.version ?? ''
     const quiltLoader =
       instancePack.components.find((c) => c.uid === 'org.quiltmc.quilt-loader')?.version ?? ''
-    const runtime: RuntimeVersions = {
+    instanceOptions.runtime = {
       minecraft,
       forge,
       optifine,
       fabricLoader,
       quiltLoader,
     }
-    instanceOptions.runtime = runtime
   }
 
   instanceOptions.resourcepacks = true

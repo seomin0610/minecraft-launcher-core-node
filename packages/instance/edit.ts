@@ -1,4 +1,10 @@
-import { InstanceDataWithTime, InstanceSchema, RuntimeVersions } from './instance'
+import {
+  InstanceDataWithTime,
+  InstanceSchema,
+  PartialRuntimeVersions,
+  RuntimeVersions,
+  RuntimeVersionsSchema,
+} from './instance'
 import { z } from 'zod'
 
 /**
@@ -21,7 +27,16 @@ export function assignShallow<T extends Record<string, any>>(
 /**
  * Edit options for instances - partial of InstanceSchema
  */
-export const EditInstanceOptionsSchema = InstanceSchema.partial()
+export const EditInstanceOptionsSchema = InstanceSchema.extend({
+  runtime: RuntimeVersionsSchema.partial({
+    forge: true,
+    neoForged: true,
+    fabricLoader: true,
+    quiltLoader: true,
+    optifine: true,
+    labyMod: true,
+  }),
+}).partial()
 
 export type EditInstanceOptions = z.infer<typeof EditInstanceOptionsSchema>
 
@@ -45,31 +60,31 @@ export async function computeInstanceEditChanges(
     if (a === b) return true
     if (a === null || a === undefined || b === null || b === undefined) return false
     if (typeof a !== typeof b) return false
-    
+
     if (typeof a === 'object') {
       if (Array.isArray(a) !== Array.isArray(b)) return false
-      
+
       if (Array.isArray(a)) {
         if (a.length !== b.length) return false
         return a.every((item, i) => deepEqual(item, b[i]))
       }
-      
+
       // For objects, compare keys and values recursively
       const keysA = Object.keys(a)
       const keysB = Object.keys(b)
-      
+
       if (keysA.length !== keysB.length) return false
-      
-      return keysA.every(key => deepEqual(a[key], b[key]))
+
+      return keysA.every((key) => deepEqual(a[key], b[key]))
     }
-    
+
     return false
   }
 
   // Compute diff for each key that was explicitly provided in editOptions
   for (const key in editOptions) {
     if (key === 'path') continue
-    
+
     const k = key as keyof InstanceDataWithTime
     const value = validatedOptions[k]
     const currentValue = currentInstance[k]
