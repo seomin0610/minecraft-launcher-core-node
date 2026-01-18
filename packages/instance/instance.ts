@@ -121,9 +121,9 @@ export const InstanceDataSchema = z.object({
   /** The resolution of the game */
   resolution: z
     .object({
-      width: z.coerce.number().positive().optional(),
-      height: z.coerce.number().positive().optional(),
-      fullscreen: z.coerce.boolean().optional(),
+      width: z.number().positive().optional(),
+      height: z.number().positive().optional(),
+      fullscreen: z.boolean().optional(),
     })
     .optional()
     .catch(undefined),

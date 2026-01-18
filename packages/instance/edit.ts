@@ -2,8 +2,7 @@ import { z } from 'zod'
 import {
   InstanceDataWithTime,
   InstanceSchema,
-  InstanceSchemaPartial,
-  RuntimeVersionsSchema,
+  RuntimeVersionsSchema
 } from './instance'
 
 /**
@@ -118,5 +117,5 @@ export function applyInstanceChanges(
   instance: InstanceDataWithTime,
   changes: Partial<InstanceDataWithTime>,
 ): void {
-  assignShallow(instance, InstanceSchemaPartial.parse(changes))
+  assignShallow(instance, changes)
 }

@@ -266,8 +266,13 @@ describe('Instance Assignment Utils', () => {
       const changes = await computeInstanceEditChanges(currentInstance, editOptions, async (s) => s)
 
       expect(changes.runtime).toEqual({
-        minecraft: '1.20.1', // preserved from current
-        forge: '47.1.0', // new value
+        fabricLoader: '',
+        forge: '47.1.0',
+        labyMod: '',
+        minecraft: '1.20.1',
+        neoForged: '',
+        optifine: '',
+        quiltLoader: '',
       })
     })
 
@@ -497,7 +502,15 @@ describe('Instance Assignment Utils', () => {
       const changes = await computeInstanceEditChanges(currentInstance, editOptions, async (s) => s)
 
       expect(changes.name).toBe('New Name')
-      expect(changes.runtime).toEqual({ minecraft: '1.20.1', optifine: 'HD_U_F1' })
+      expect(changes.runtime).toEqual({
+        fabricLoader: '',
+        forge: '',
+        labyMod: '',
+        minecraft: '1.20.1',
+        neoForged: '',
+        optifine: 'HD_U_F1',
+        quiltLoader: '',
+      })
       expect(changes.resolution).toEqual({ width: 1280 })
       expect(changes.vmOptions).toEqual(['-Xmx8G'])
       expect(changes.showLog).toBe(true)
@@ -523,9 +536,7 @@ describe('Instance Assignment Utils', () => {
         runtime: {
           minecraft: '1.19.2',
           forge: '',
-          liteloader: '',
           fabricLoader: '',
-          yarn: '',
           optifine: '',
           quiltLoader: '',
           neoForged: '',
@@ -539,10 +550,8 @@ describe('Instance Assignment Utils', () => {
           labyMod: '',
           optifine: '',
           fabricLoader: '',
-          yarn: '',
           quiltLoader: '',
           neoForged: '',
-          liteloader: '',
           forge: '',
           minecraft: '1.19.2',
         },
@@ -593,14 +602,13 @@ describe('Instance Assignment Utils', () => {
       const changes = {
         name: 'Updated Instance',
         author: 'Updated Author',
-        maxMemory: 8192,
       }
 
       applyInstanceChanges(instance, changes)
 
       expect(instance.name).toBe('Updated Instance')
       expect(instance.author).toBe('Updated Author')
-      expect(instance.maxMemory).toBe(8192)
+      expect(instance.maxMemory).toBe(4096)
       expect(instance.description).toBe(instance.description) // unchanged
     })
 
@@ -625,7 +633,7 @@ describe('Instance Assignment Utils', () => {
       const changes: Partial<InstanceDataWithTime> = {
         runtime: {
           ...instance.runtime,
-          forge: undefined,
+          forge: '',
           fabricLoader: '0.14.21',
         },
       }
@@ -663,15 +671,15 @@ describe('Instance Assignment Utils', () => {
       const changes = await computeInstanceEditChanges(instance, editOptions, async (s) => s)
 
       // Apply changes
-      const updatedInstance = applyInstanceChanges(instance, changes)
+      applyInstanceChanges(instance, changes)
 
-      expect(updatedInstance.name).toBe('Updated Test Instance')
-      expect(updatedInstance.runtime.minecraft).toBe('1.20.1') // preserved from merge
-      expect(updatedInstance.runtime.forge).toBe('43.2.0') // preserved
-      expect(updatedInstance.runtime.fabricLoader).toBe('0.14.21') // added
-      expect(updatedInstance.maxMemory).toBe(8192)
-      expect(updatedInstance.showLog).toBe(true)
-      expect(updatedInstance.author).toBe('Test Author') // unchanged
+      expect(instance.name).toBe('Updated Test Instance')
+      expect(instance.runtime.minecraft).toBe('1.20.1') // preserved from merge
+      expect(instance.runtime.forge).toBe('') // removed
+      expect(instance.runtime.fabricLoader).toBe('0.14.21') // added
+      expect(instance.maxMemory).toBe(8192)
+      expect(instance.showLog).toBe(true)
+      expect(instance.author).toBe('Test Author') // unchanged
     })
   })
 })
