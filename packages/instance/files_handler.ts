@@ -107,8 +107,10 @@ export class InstanceFileOperationHandler {
    * These tasks will do the phase 1 of the instance file operation.
    */
   async prepareInstallFiles(file: InstanceFileUpdate[], signal: AbortSignal) {
-    for (const f of file) {
-      await this.#handleFile(f)
+    const batchSize = 64;
+    for (let i = 0; i < file.length; i += batchSize) {
+        const batch = file.slice(i, i + batchSize);
+        await Promise.all(batch.map(f => this.#handleFile(f)));
     }
 
     const unhandled = [] as InstanceFile[]
@@ -327,6 +329,30 @@ export class InstanceFileOperationHandler {
 
   async #dispatchFileTask(file: InstanceFile, sha1: string) {
     const destination = join(this.workspacePath, file.path)
+
+    // Check if file already exists with correct checksum
+    const fStat = await stat(destination).catch(() => undefined)
+    if (fStat && fStat.isFile()) {
+      if (file.hashes.sha1) {
+        const existingSha1 = await this.context.worker.checksum(destination, 'sha1')
+        if (existingSha1 === file.hashes.sha1) {
+          return
+        }
+      }
+      if (file.hashes.crc32) {
+        const existingCrc32 = await this.context.worker.checksum(destination, 'crc32')
+        if (existingCrc32 === file.hashes.crc32) {
+          return
+        }
+      }
+      if (file.hashes.sha256) {
+        const existingSha256 = await this.context.worker.checksum(destination, 'sha256')
+        if (existingSha256 === file.hashes.sha256) {
+          return
+        }
+      }
+    }
+
     if (await this.#handleLink(file, destination, sha1)) return
 
     if (!file.downloads) {
