@@ -7,7 +7,7 @@ export function decorateError(
 ) {
   Object.assign(err, {
     name: 'DownloadError',
-    urls,
+    urls: urls.join(' '),
     headers,
     destination,
   })
