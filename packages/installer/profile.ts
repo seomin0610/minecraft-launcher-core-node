@@ -143,12 +143,12 @@ export async function diagnoseProfile(
   for (const proc of processors) {
     if (proc.outputs) {
       for (const [file, checksum] of Object.entries(proc.outputs)) {
-        await diagnoseFile({
+        issues.push(await diagnoseFile({
           role: 'processor',
           file,
           expectedChecksum: checksum.replace(/'/g, ''),
           hint: 'Re-install this installer profile!',
-        })
+        }))
       }
     }
   }

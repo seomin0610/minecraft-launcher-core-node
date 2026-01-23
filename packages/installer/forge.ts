@@ -553,7 +553,10 @@ async function downloadForgeJar(
         hint: 'Problem on forge installer jar! Please consider to use Installer.installForge to fix.',
       },
       { signal: options.signal, checksum: options.checksum },
-    ).catch(async () => {
+    ).then(async (issue) => {
+      if (!issue) {
+        return
+      }
       if (options.diagnose) {
         throw new InstallError({
           forge: {
