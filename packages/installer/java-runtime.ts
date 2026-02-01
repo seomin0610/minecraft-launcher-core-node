@@ -318,10 +318,6 @@ export async function installJavaRuntimeWithJson(
 
   const readManifest = async () => {
     const content = await readFile(jsonPath)
-    const sha1 = createHash('sha1').update(content).digest('hex')
-    if (sha1 !== target.manifest.sha1) {
-      throw new Error(`Java runtime manifest sha1 mismatch`)
-    }
     return JSON.parse(content.toString()) as JavaRuntimeManifest
   }
 
@@ -336,7 +332,6 @@ export async function installJavaRuntimeWithJson(
     { signal: options.signal, checksum: options.checksum },
   )
 
-  let manifest: JavaRuntimeManifest
   if (manifestIssue) {
     if (options.diagnose) {
       throw new Error(
@@ -354,11 +349,7 @@ export async function installJavaRuntimeWithJson(
         target: target.version.name,
       }),
     })
-    manifest = await readManifest()
-  } else {
-    // Manifest is valid, read it
-    manifest = await readManifest()
-  }
-
+  } 
+  const manifest = await readManifest()
   await downloadFiles(destination, options, manifest)
 }
