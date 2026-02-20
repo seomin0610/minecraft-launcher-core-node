@@ -61,6 +61,8 @@ export interface AssetsOptions extends DownloadBaseOptions, WithDiagnose {
    */
   checksum?: (file: string, algorithm: string) => Promise<string>
 
+  strict?: boolean
+
   abortSignal?: AbortSignal
 }
 
@@ -268,6 +270,7 @@ export async function installResolvedAssets(
   await diagnoseAssets(assets, folder, {
     signal: options.abortSignal,
     checksum: options.checksum,
+    strict: options.strict,
   }).then(async (assets) => {
     if (assets.length === 0) {
       return

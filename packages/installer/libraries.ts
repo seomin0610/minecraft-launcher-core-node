@@ -1,6 +1,7 @@
 /* eslint-disable n/no-unsupported-features/node-builtins */
 import { MinecraftFolder, MinecraftLocation, ResolvedLibrary, ResolvedVersion } from '@xmcl/core'
 import { isNotNull } from '@xmcl/core/utils'
+import { open, readAllEntries, walkEntriesGenerator } from '@xmcl/unzip'
 import {
   DownloadBaseOptions,
   downloadMultiple,
@@ -46,6 +47,8 @@ export interface LibraryOptions extends DownloadBaseOptions, WithDiagnose {
    */
   checksum?: (file: string, algorithm: string) => Promise<string>
 
+  strict?: boolean
+
   signal?: AbortSignal
 }
 
@@ -76,7 +79,11 @@ export async function installResolvedLibraries(
 ): Promise<void> {
   const folder = MinecraftFolder.from(typeof minecraft === 'string' ? minecraft : minecraft.root)
 
-  await diagnoseLibraries(libraries, folder, { signal: option.signal, checksum: option.checksum }).then(async (libs) => {
+  await diagnoseLibraries(libraries, folder, {
+    signal: option.signal,
+    checksum: option.checksum,
+    strict: option.strict,
+  }).then(async (libs) => {
     if (libs.length === 0) {
       return
     }
@@ -174,17 +181,32 @@ export async function diagnoseLibraries(
       }
       const libPath = minecraft.getLibraryByPath(lib.download.path)
       if (!options?.strict) {
-        const issue = await diagnoseFile(
-          {
-            file: libPath,
-            expectedChecksum: lib.download.sha1,
-            role: 'library',
-            hint: 'Problem on library! Please consider to use Installer.installLibraries to fix.',
-          },
-          options,
-        )
-        if (issue) {
-          return lib
+        if (lib.download.sha1) {
+          const issue = await diagnoseFile(
+            {
+              file: libPath,
+              expectedChecksum: lib.download.sha1,
+              role: 'library',
+              hint: 'Problem on library! Please consider to use Installer.installLibraries to fix.',
+            },
+            options,
+          )
+          if (issue) {
+            return lib
+          }
+        } else {
+          // ensure this is a wellformed zip file
+          try {
+            const zip = await open(libPath)
+            try {
+              for await (const _ of walkEntriesGenerator(zip)) {
+              }
+            } finally {
+              zip.close()
+            }
+          } catch {
+            return lib
+          }
         }
       } else {
         // non-strict mode might be faster
